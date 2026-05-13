@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { toast } from "sonner";
-import { Loader2, LogOut, Plus, Trash2, Upload, Save } from "lucide-react";
+import { Check, Loader2, LogOut, Plus, Trash2, Upload, Save, X } from "lucide-react";
 
 export const Route = createFileRoute("/admin")({
   head: () => ({
@@ -35,6 +35,16 @@ interface ContentItem {
   image_url: string | null;
   meta: string | null;
   sort_order: number;
+}
+
+interface ReviewSubmission {
+  id: string;
+  name: string;
+  location: string | null;
+  review: string;
+  rating: number;
+  approved: boolean;
+  created_at: string;
 }
 
 function AdminPage() {
@@ -195,14 +205,118 @@ function Dashboard() {
             {CATEGORIES.map((c) => (
               <TabsTrigger key={c.id} value={c.id}>{c.label}</TabsTrigger>
             ))}
+            <TabsTrigger value="reviews">Reviews</TabsTrigger>
           </TabsList>
           {CATEGORIES.map((c) => (
             <TabsContent key={c.id} value={c.id}>
               <CategoryManager category={c.id} label={c.label} />
             </TabsContent>
           ))}
+          <TabsContent value="reviews">
+            <ReviewModeration />
+          </TabsContent>
         </Tabs>
       </main>
+    </div>
+  );
+}
+
+function ReviewModeration() {
+  const [reviews, setReviews] = useState<ReviewSubmission[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [busyId, setBusyId] = useState<string | null>(null);
+
+  async function load() {
+    setLoading(true);
+    const { data, error } = await supabase
+      .from("review_submissions")
+      .select("id,name,location,review,rating,approved,created_at")
+      .order("created_at", { ascending: false });
+
+    if (error) toast.error(error.message);
+    else setReviews((data ?? []) as ReviewSubmission[]);
+    setLoading(false);
+  }
+
+  useEffect(() => {
+    load();
+  }, []);
+
+  async function setApproval(id: string, approved: boolean) {
+    setBusyId(id);
+    const { error } = await supabase.from("review_submissions").update({ approved }).eq("id", id);
+    setBusyId(null);
+    if (error) return toast.error(error.message);
+
+    setReviews((prev) => prev.map((r) => (r.id === id ? { ...r, approved } : r)));
+    toast.success(approved ? "Review approved" : "Review hidden");
+  }
+
+  async function remove(id: string) {
+    if (!confirm("Delete this review submission?")) return;
+    setBusyId(id);
+    const { error } = await supabase.from("review_submissions").delete().eq("id", id);
+    setBusyId(null);
+    if (error) return toast.error(error.message);
+    setReviews((prev) => prev.filter((r) => r.id !== id));
+    toast.success("Review deleted");
+  }
+
+  return (
+    <div>
+      <div className="mb-6 flex items-center justify-between">
+        <div>
+          <h2 className="font-display text-2xl text-foreground">User Reviews</h2>
+          <p className="text-sm text-muted-foreground">
+            {reviews.length} submission{reviews.length === 1 ? "" : "s"}
+          </p>
+        </div>
+      </div>
+
+      {loading ? (
+        <div className="flex justify-center py-16"><Loader2 className="size-6 animate-spin text-gold" /></div>
+      ) : reviews.length === 0 ? (
+        <div className="rounded-xl border border-dashed border-border/60 p-12 text-center text-sm text-muted-foreground">
+          No submitted reviews yet.
+        </div>
+      ) : (
+        <div className="grid gap-4">
+          {reviews.map((review) => (
+            <div key={review.id} className="rounded-xl border border-border/60 bg-card p-5">
+              <div className="flex flex-wrap items-start justify-between gap-3">
+                <div>
+                  <div className="font-medium text-foreground">{review.name}</div>
+                  <div className="text-xs text-muted-foreground">
+                    {review.location || "Unknown location"} · {new Date(review.created_at).toLocaleString()}
+                  </div>
+                </div>
+                <div className="rounded-full border border-border/60 px-3 py-1 text-xs text-muted-foreground">
+                  {review.rating}/5
+                </div>
+              </div>
+              <p className="mt-3 whitespace-pre-wrap text-sm text-foreground/90">{review.review}</p>
+              <div className="mt-4 flex flex-wrap items-center gap-2">
+                <Button
+                  size="sm"
+                  variant={review.approved ? "secondary" : "default"}
+                  disabled={busyId === review.id}
+                  onClick={() => setApproval(review.id, !review.approved)}
+                >
+                  {review.approved ? <X className="mr-2 size-4" /> : <Check className="mr-2 size-4" />}
+                  {review.approved ? "Unapprove" : "Approve"}
+                </Button>
+                <Button size="sm" variant="outline" disabled={busyId === review.id} onClick={() => remove(review.id)}>
+                  <Trash2 className="mr-2 size-4" />
+                  Delete
+                </Button>
+                <span className="text-xs text-muted-foreground">
+                  Status: {review.approved ? "Visible on site" : "Hidden until approved"}
+                </span>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

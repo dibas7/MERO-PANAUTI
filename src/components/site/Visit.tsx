@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { Calendar, Hotel, Bus, Mail, Phone } from "lucide-react";
+import { Calendar, Hotel, Bus } from "lucide-react";
 import { SectionHeader } from "./Section";
 
 const cards = [
@@ -48,55 +48,6 @@ export function Visit() {
             </motion.div>
           ))}
         </div>
-
-        {/* Contact form */}
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, margin: "-80px" }}
-          transition={{ duration: 0.8 }}
-          className="mt-16 grid gap-10 rounded-3xl border border-border/60 bg-card/40 p-8 shadow-elegant md:grid-cols-2 md:p-12"
-        >
-          <div>
-            <div className="text-[11px] uppercase tracking-[0.35em] text-gold">Reach Out</div>
-            <h3 className="mt-3 font-display text-3xl text-foreground md:text-4xl">
-              Plan a private heritage tour
-            </h3>
-            <p className="mt-3 text-muted-foreground">
-              Our local guides craft bespoke walks through Panauti's
-              temples, kitchens, and craft workshops.
-            </p>
-            <div className="mt-6 space-y-3 text-sm text-foreground/85">
-              <a href="mailto:hello@explorepanauti.np" className="flex items-center gap-3 hover:text-gold">
-                <Mail className="size-4 text-gold" /><span>hello@explorepanauti.np</span>
-              </a>
-              <a href="tel:+97798" className="flex items-center gap-3 hover:text-gold">
-                <Phone className="size-4 text-gold" /><span>+977 98-PANAUTI</span>
-              </a>
-            </div>
-          </div>
-
-          <form className="space-y-4" onSubmit={(e) => e.preventDefault()}>
-            <input
-              type="text"
-              placeholder="Your name"
-              className="w-full rounded-xl border border-border/70 bg-background/60 px-4 py-3 text-sm outline-none transition focus:border-gold"
-            />
-            <input
-              type="email"
-              placeholder="Email address"
-              className="w-full rounded-xl border border-border/70 bg-background/60 px-4 py-3 text-sm outline-none transition focus:border-gold"
-            />
-            <textarea
-              placeholder="Tell us when you'd like to visit…"
-              rows={4}
-              className="w-full rounded-xl border border-border/70 bg-background/60 px-4 py-3 text-sm outline-none transition focus:border-gold"
-            />
-            <button className="w-full rounded-xl bg-gradient-gold py-3 text-sm font-medium text-[oklch(0.18_0.03_35)] transition-transform hover:scale-[1.01]">
-              Request a Journey
-            </button>
-          </form>
-        </motion.div>
       </div>
     </section>
   );
