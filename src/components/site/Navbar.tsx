@@ -1,21 +1,23 @@
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { Menu, X, Globe, Moon, Sun } from "lucide-react";
+import { useSiteLanguage } from "@/contexts/site-language";
+import type { SiteStringKey } from "@/lib/site-strings";
 
-const links = [
-  { href: "#about", label: "About" },
-  { href: "#places", label: "Places" },
-  { href: "#culture", label: "Culture" },
-  { href: "#food", label: "Food" },
-  { href: "#gallery", label: "Gallery" },
-  { href: "#map", label: "Map" },
-  { href: "#visit", label: "Visit" },
+const links: { href: string; labelKey: SiteStringKey }[] = [
+  { href: "#about", labelKey: "nav_link_about" },
+  { href: "#places", labelKey: "nav_link_places" },
+  { href: "#culture", labelKey: "nav_link_culture" },
+  { href: "#food", labelKey: "nav_link_food" },
+  { href: "#gallery", labelKey: "nav_link_gallery" },
+  { href: "#map", labelKey: "nav_link_map" },
+  { href: "#visit", labelKey: "nav_link_visit" },
 ];
 
 export function Navbar() {
+  const { locale, toggleLocale, t } = useSiteLanguage();
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
-  const [lang, setLang] = useState<"EN" | "नेपाली">("EN");
   const [dark, setDark] = useState(true);
 
   useEffect(() => {
@@ -28,6 +30,8 @@ export function Navbar() {
   useEffect(() => {
     document.documentElement.classList.toggle("light", !dark);
   }, [dark]);
+
+  const langShort = locale === "en" ? "EN" : "ने";
 
   return (
     <motion.header
@@ -48,7 +52,7 @@ export function Navbar() {
               Explore <span className="text-gradient-gold">Panauti</span>
             </div>
             <div className="text-[10px] uppercase tracking-[0.25em] text-muted-foreground">
-              Where History Lives
+              {t("nav_brand_subtitle")}
             </div>
           </div>
         </a>
@@ -60,7 +64,7 @@ export function Navbar() {
               href={l.href}
               className="group relative text-sm text-foreground/80 transition-colors hover:text-foreground"
             >
-              {l.label}
+              {t(l.labelKey)}
               <span className="absolute -bottom-1 left-0 h-px w-0 bg-gradient-gold transition-all duration-300 group-hover:w-full" />
             </a>
           ))}
@@ -68,12 +72,15 @@ export function Navbar() {
 
         <div className="flex items-center gap-2">
           <button
-            onClick={() => setLang(lang === "EN" ? "नेपाली" : "EN")}
-            className="hidden items-center gap-1.5 rounded-full border border-border/60 px-3 py-1.5 text-xs text-foreground/80 transition-colors hover:border-gold/60 hover:text-foreground sm:flex"
+            type="button"
+            onClick={() => toggleLocale()}
+            aria-label={t("nav_lang_toggle")}
+            className="flex items-center gap-1.5 rounded-full border border-border/60 px-3 py-1.5 text-xs text-foreground/80 transition-colors hover:border-gold/60 hover:text-foreground"
           >
-            <Globe className="size-3.5" /> {lang}
+            <Globe className="size-3.5 shrink-0" /> {langShort}
           </button>
           <button
+            type="button"
             onClick={() => setDark(!dark)}
             aria-label="Toggle theme"
             className="grid size-9 place-items-center rounded-full border border-border/60 text-foreground/80 transition-colors hover:border-gold/60 hover:text-foreground"
@@ -81,6 +88,7 @@ export function Navbar() {
             {dark ? <Sun className="size-4" /> : <Moon className="size-4" />}
           </button>
           <button
+            type="button"
             className="grid size-9 place-items-center rounded-full border border-border/60 text-foreground/80 lg:hidden"
             onClick={() => setOpen(!open)}
             aria-label="Menu"
@@ -100,9 +108,20 @@ export function Navbar() {
                 onClick={() => setOpen(false)}
                 className="rounded-lg px-3 py-2 text-sm text-foreground/85 hover:bg-muted/60"
               >
-                {l.label}
+                {t(l.labelKey)}
               </a>
             ))}
+            <button
+              type="button"
+              onClick={() => {
+                toggleLocale();
+                setOpen(false);
+              }}
+              className="flex items-center gap-2 rounded-lg px-3 py-2 text-left text-sm text-foreground/85 hover:bg-muted/60"
+            >
+              <Globe className="size-4 shrink-0 text-gold" />
+              {t("nav_lang_toggle")} ({locale === "en" ? "नेपाली" : "English"})
+            </button>
           </div>
         </div>
       )}

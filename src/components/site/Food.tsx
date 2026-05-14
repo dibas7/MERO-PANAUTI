@@ -1,16 +1,26 @@
 import { motion } from "framer-motion";
 import { SectionHeader } from "./Section";
+import { useSiteLanguage } from "@/contexts/site-language";
 import { useExtraContent } from "@/hooks/useExtraContent";
 
 export function Food() {
+  const { isNepali, t } = useSiteLanguage();
   const items = useExtraContent("food").filter((e) => e.image_url);
   return (
     <section id="food" className="relative py-28 md:py-40">
       <div className="mx-auto max-w-7xl px-6">
         <SectionHeader
-          eyebrow="Food of Panauti"
-          title={<>Recipes from <span className="text-gradient-gold italic">a thousand kitchens</span></>}
-          description="Newari cuisine is ritual food — every dish prepared for a feast, a festival, or a god."
+          eyebrow={t("food_eyebrow")}
+          title={
+            isNepali ? (
+              t("food_title")
+            ) : (
+              <>
+                Recipes from <span className="text-gradient-gold italic">a thousand kitchens</span>
+              </>
+            )
+          }
+          description={t("food_description")}
         />
 
         <div className="mt-20 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">

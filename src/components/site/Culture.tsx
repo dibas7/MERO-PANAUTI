@@ -1,8 +1,10 @@
 import { motion } from "framer-motion";
 import { SectionHeader } from "./Section";
+import { useSiteLanguage } from "@/contexts/site-language";
 import { useExtraContent } from "@/hooks/useExtraContent";
 
 export function Culture() {
+  const { isNepali, t } = useSiteLanguage();
   const events = useExtraContent("culture");
   return (
     <section id="culture" className="relative overflow-hidden py-28 md:py-40">
@@ -15,9 +17,17 @@ export function Culture() {
       />
       <div className="mx-auto max-w-6xl px-6">
         <SectionHeader
-          eyebrow="Culture & Festivals"
-          title={<>Rituals that <span className="text-gradient-gold italic">never sleep</span></>}
-          description="The Newari calendar turns with festivals — each one a thread in the unbroken cloth of Panauti's living heritage."
+          eyebrow={t("culture_eyebrow")}
+          title={
+            isNepali ? (
+              t("culture_title")
+            ) : (
+              <>
+                Rituals that <span className="text-gradient-gold italic">never sleep</span>
+              </>
+            )
+          }
+          description={t("culture_description")}
         />
 
         <div className="relative mt-20">

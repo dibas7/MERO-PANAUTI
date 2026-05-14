@@ -2,9 +2,11 @@ import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { X } from "lucide-react";
 import { SectionHeader } from "./Section";
+import { useSiteLanguage } from "@/contexts/site-language";
 import { useExtraContent } from "@/hooks/useExtraContent";
 
 export function Gallery() {
+  const { isNepali, t } = useSiteLanguage();
   const [open, setOpen] = useState<string | null>(null);
   const images = useExtraContent("gallery").filter((e) => e.image_url);
 
@@ -12,15 +14,24 @@ export function Gallery() {
     <section id="gallery" className="relative py-28 md:py-40">
       <div className="mx-auto max-w-7xl px-6">
         <SectionHeader
-          eyebrow="Gallery"
-          title={<>Through the <span className="text-gradient-gold italic">lens of Panauti</span></>}
-          description="Drone, street, and detail photography from every season."
+          eyebrow={t("gallery_eyebrow")}
+          title={
+            isNepali ? (
+              t("gallery_title")
+            ) : (
+              <>
+                Through the <span className="text-gradient-gold italic">lens of Panauti</span>
+              </>
+            )
+          }
+          description={t("gallery_description")}
         />
 
         <div className="mt-16 grid auto-rows-[200px] grid-cols-2 gap-3 md:grid-cols-4 md:gap-4">
           {images.map((img, i) => (
             <motion.button
               key={img.id}
+              type="button"
               initial={{ opacity: 0, scale: 0.95 }}
               whileInView={{ opacity: 1, scale: 1 }}
               viewport={{ once: true, margin: "-60px" }}
@@ -30,7 +41,7 @@ export function Gallery() {
             >
               <img
                 src={img.image_url as string}
-                alt={img.title ?? "Panauti gallery image"}
+                alt={img.title ?? t("gallery_img_alt")}
                 loading="lazy"
                 className="h-full w-full object-cover transition-transform duration-[1.4s] ease-out group-hover:scale-110"
               />
@@ -50,9 +61,10 @@ export function Gallery() {
             className="fixed inset-0 z-[60] flex items-center justify-center bg-background/90 p-6 backdrop-blur-xl"
           >
             <button
+              type="button"
               className="absolute right-6 top-6 grid size-10 place-items-center rounded-full glass text-foreground"
               onClick={() => setOpen(null)}
-              aria-label="Close"
+              aria-label={t("gallery_close")}
             >
               <X className="size-4" />
             </button>
