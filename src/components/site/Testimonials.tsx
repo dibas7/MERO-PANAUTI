@@ -1,4 +1,5 @@
 import { motion } from "framer-motion";
+import { Link } from "@tanstack/react-router";
 import { useEffect, useState, type FormEvent } from "react";
 import { Star } from "lucide-react";
 import { SectionHeader } from "./Section";
@@ -20,6 +21,7 @@ export function Testimonials() {
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [signedIn, setSignedIn] = useState(false);
   const [name, setName] = useState("");
   const [location, setLocation] = useState("");
   const [review, setReview] = useState("");
@@ -28,10 +30,13 @@ export function Testimonials() {
   useEffect(() => {
     let cancelled = false;
     (async () => {
+      const { data: sessionData } = await supabase.auth.getSession();
+      if (!cancelled) setSignedIn(!!sessionData.session?.user);
+
       const { data, error } = await supabase
         .from("review_submissions")
         .select("id,name,location,review,rating")
-        .eq("approved", true)
+        .eq("status", "published")
         .order("created_at", { ascending: false })
         .limit(6);
 
@@ -59,7 +64,7 @@ export function Testimonials() {
     const { data, error } = await supabase
       .from("review_submissions")
       .select("id,name,location,review,rating")
-      .eq("approved", true)
+      .eq("status", "published")
       .order("created_at", { ascending: false })
       .limit(6);
 
@@ -84,6 +89,8 @@ export function Testimonials() {
         location: location.trim() || null,
         review: review.trim(),
         rating,
+        place_name: "Panauti",
+        status: "published",
       });
 
       if (error) {
@@ -95,7 +102,7 @@ export function Testimonials() {
       setLocation("");
       setReview("");
       setRating(5);
-      toast.success(t("testimonials_toast_ok"));
+      toast.success(t("testimonials_toast_ok"), { duration: 3000 });
       void retryLoadReviews();
     } catch (err) {
       toast.error(err instanceof Error ? err.message : t("testimonials_toast_err"));
@@ -137,9 +144,19 @@ export function Testimonials() {
         ) : null}
 
         <div className="mt-16 rounded-3xl border border-border/60 bg-card/40 p-6 md:p-8">
-          <div className="text-[11px] uppercase tracking-[0.3em] text-gold">{t("testimonials_submit_label")}</div>
-          <h3 className="mt-3 font-display text-3xl text-foreground">{t("testimonials_form_title")}</h3>
-          <p className="mt-2 text-sm text-muted-foreground">{t("testimonials_form_help")}</p>
+          <div className="flex flex-wrap items-start justify-between gap-3">
+            <div>
+              <div className="text-[11px] uppercase tracking-[0.3em] text-gold">{t("testimonials_submit_label")}</div>
+              <h3 className="mt-3 font-display text-3xl text-foreground">{t("testimonials_form_title")}</h3>
+              <p className="mt-2 text-sm text-muted-foreground">{t("testimonials_form_help")}</p>
+            </div>
+            <Link
+              to="/reviews"
+              className="rounded-full border border-border/60 px-4 py-2 text-xs text-foreground/80 transition-colors hover:border-gold/60 hover:text-gold"
+            >
+              {t("testimonials_my_reviews")}
+            </Link>
+          </div>
 
           <form onSubmit={submitReview} className="mt-6 grid gap-4 md:grid-cols-2">
             <input
@@ -197,7 +214,7 @@ export function Testimonials() {
                 className="relative rounded-3xl glass p-8 shadow-elegant"
               >
                 <div className="absolute -top-4 left-8 font-display text-7xl leading-none text-gold/40">
-                  "
+                  &ldquo;
                 </div>
                 <div className="mb-4 flex gap-0.5 text-gold">
                   {Array.from({ length: r.rating }).map((_, j) => (

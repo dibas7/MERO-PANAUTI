@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { toast } from "sonner";
-import { Check, Loader2, LogOut, Plus, Trash2, Upload, Save, X } from "lucide-react";
+import { Eye, EyeOff, Loader2, LogOut, Plus, Trash2, Upload, Save } from "lucide-react";
 
 export const Route = createFileRoute("/admin")({
   head: () => ({
@@ -43,7 +43,8 @@ interface ReviewSubmission {
   location: string | null;
   review: string;
   rating: number;
-  approved: boolean;
+  place_name: string;
+  status: "published" | "hidden";
   created_at: string;
 }
 
@@ -230,7 +231,7 @@ function ReviewModeration() {
     setLoading(true);
     const { data, error } = await supabase
       .from("review_submissions")
-      .select("id,name,location,review,rating,approved,created_at")
+      .select("id,name,location,review,rating,place_name,status,created_at")
       .order("created_at", { ascending: false });
 
     if (error) toast.error(error.message);
@@ -242,14 +243,14 @@ function ReviewModeration() {
     load();
   }, []);
 
-  async function setApproval(id: string, approved: boolean) {
+  async function setVisibility(id: string, status: "published" | "hidden") {
     setBusyId(id);
-    const { error } = await supabase.from("review_submissions").update({ approved }).eq("id", id);
+    const { error } = await supabase.from("review_submissions").update({ status }).eq("id", id);
     setBusyId(null);
     if (error) return toast.error(error.message);
 
-    setReviews((prev) => prev.map((r) => (r.id === id ? { ...r, approved } : r)));
-    toast.success(approved ? "Review approved" : "Review hidden");
+    setReviews((prev) => prev.map((r) => (r.id === id ? { ...r, status } : r)));
+    toast.success(status === "published" ? "Review is visible on site" : "Review hidden from site");
   }
 
   async function remove(id: string) {
@@ -266,7 +267,7 @@ function ReviewModeration() {
     <div>
       <div className="mb-6 flex items-center justify-between">
         <div>
-          <h2 className="font-display text-2xl text-foreground">User Reviews</h2>
+          <h2 className="font-display text-2xl text-foreground">Reviews</h2>
           <p className="text-sm text-muted-foreground">
             {reviews.length} submission{reviews.length === 1 ? "" : "s"}
           </p>
@@ -287,7 +288,9 @@ function ReviewModeration() {
                 <div>
                   <div className="font-medium text-foreground">{review.name}</div>
                   <div className="text-xs text-muted-foreground">
-                    {review.location || "Unknown location"} · {new Date(review.created_at).toLocaleString()}
+                    {review.place_name}
+                    {review.location ? ` · ${review.location}` : ""} ·{" "}
+                    {new Date(review.created_at).toLocaleString()}
                   </div>
                 </div>
                 <div className="rounded-full border border-border/60 px-3 py-1 text-xs text-muted-foreground">
@@ -298,19 +301,25 @@ function ReviewModeration() {
               <div className="mt-4 flex flex-wrap items-center gap-2">
                 <Button
                   size="sm"
-                  variant={review.approved ? "secondary" : "default"}
+                  variant={review.status === "published" ? "secondary" : "default"}
                   disabled={busyId === review.id}
-                  onClick={() => setApproval(review.id, !review.approved)}
+                  onClick={() =>
+                    setVisibility(review.id, review.status === "published" ? "hidden" : "published")
+                  }
                 >
-                  {review.approved ? <X className="mr-2 size-4" /> : <Check className="mr-2 size-4" />}
-                  {review.approved ? "Unapprove" : "Approve"}
+                  {review.status === "published" ? (
+                    <EyeOff className="mr-2 size-4" />
+                  ) : (
+                    <Eye className="mr-2 size-4" />
+                  )}
+                  {review.status === "published" ? "Hide" : "Show on site"}
                 </Button>
                 <Button size="sm" variant="outline" disabled={busyId === review.id} onClick={() => remove(review.id)}>
                   <Trash2 className="mr-2 size-4" />
                   Delete
                 </Button>
                 <span className="text-xs text-muted-foreground">
-                  Status: {review.approved ? "Visible on site" : "Hidden until approved"}
+                  Status: {review.status === "published" ? "Published" : "Hidden"}
                 </span>
               </div>
             </div>

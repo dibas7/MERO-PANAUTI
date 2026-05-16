@@ -52,34 +52,40 @@ export type Database = {
       }
       review_submissions: {
         Row: {
-          approved: boolean
           created_at: string
           id: string
           location: string | null
           name: string
+          place_name: string
           rating: number
           review: string
+          status: Database["public"]["Enums"]["review_status"]
           updated_at: string
+          user_id: string | null
         }
         Insert: {
-          approved?: boolean
           created_at?: string
           id?: string
           location?: string | null
           name: string
+          place_name?: string
           rating?: number
           review: string
+          status?: Database["public"]["Enums"]["review_status"]
           updated_at?: string
+          user_id?: string | null
         }
         Update: {
-          approved?: boolean
           created_at?: string
           id?: string
           location?: string | null
           name?: string
+          place_name?: string
           rating?: number
           review?: string
+          status?: Database["public"]["Enums"]["review_status"]
           updated_at?: string
+          user_id?: string | null
         }
         Relationships: []
       }
@@ -119,6 +125,7 @@ export type Database = {
     }
     Enums: {
       app_role: "admin"
+      review_status: "published" | "hidden"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -247,6 +254,7 @@ export const Constants = {
   public: {
     Enums: {
       app_role: ["admin"],
+      review_status: ["published", "hidden"],
     },
   },
 } as const
